@@ -1,0 +1,148 @@
+.workspace-header-nav {
+  background: #fff;
+  border-bottom: 1px solid #E0E0E0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.workspace-header-container {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 16px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.workspace-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.workspace-logo {
+  width: 48px;
+  height: 48px;
+  background: #16A085;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.workspace-brand {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.workspace-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.workspace-tasks-btn {
+  background: #16A085;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+  }
+
+  &:hover {
+    background: #138870;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.workspace-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #F5F5F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+
+  img {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: #E0E0E0;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.workspace-profile-btn {
+  &:hover {
+    background: #E3F2FD;
+  }
+}
+
+@media (max-width: 768px) {
+  .workspace-header-container {
+    padding: 12px 24px;
+  }
+
+  .workspace-brand {
+    font-size: 16px;
+  }
+
+  .workspace-logo {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .workspace-tasks-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+
+    img {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .workspace-icon-btn {
+    width: 36px;
+    height: 36px;
+
+    img {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}

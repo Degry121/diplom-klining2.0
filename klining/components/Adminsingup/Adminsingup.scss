@@ -1,0 +1,133 @@
+:root {
+  --bg: #f6f0f1;
+  --text: #0f172a;
+  --muted: #8a8f98;
+  --primary: #0b6a6a;
+  --card: #ffffff;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; }
+
+.admin-login {
+  min-height: 100vh;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  padding: 40px 16px;
+   &__error {
+        background: #fee;
+        color: #c33;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        border: 1px solid #fcc;
+    }
+
+    &__button {
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+}
+
+.admin-login__container {
+  width: min(500px, 100%);
+  text-align: center;
+}
+
+.admin-login__title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.admin-login__subtitle {
+  margin: 0 0 32px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.admin-login__card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 40px 30px;
+}
+
+.admin-login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.form-group__label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.form-group__input {
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.form-group__input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11, 106, 106, 0.1);
+}
+
+.form-group__input::placeholder {
+  color: #b5b5b5;
+}
+
+.admin-login__button {
+  height: 49px;
+  margin-top: 12px;
+
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.admin-login__button:hover {
+  opacity: 0.9;
+}
+
+.admin-login__button:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 640px) {
+  .admin-login__card {
+    padding: 30px 20px;
+  }
+
+  .admin-login__title {
+    font-size: 24px;
+  }
+}
