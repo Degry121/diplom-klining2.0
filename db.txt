@@ -1,0 +1,129 @@
+-- ==========================================
+-- 1. ОЧИСТКА БАЗЫ (для создания с нуля)
+-- ==========================================
+DROP TABLE IF EXISTS tasks CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;
+DROP TABLE IF EXISTS locations CASCADE;
+DROP TABLE IF EXISTS departments CASCADE;
+
+
+-- ==========================================
+-- 2. СОЗДАНИЕ ТАБЛИЦ
+-- ==========================================
+
+-- Таблица ролей
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- Таблица отделов
+CREATE TABLE departments (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- Таблица локаций (объектов)
+CREATE TABLE locations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    address TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица пользователей
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    phone VARCHAR(20),
+    role_id INTEGER REFERENCES roles(id) ON DELETE SET NULL,
+    department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица задач
+CREATE TABLE tasks (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    location_id INTEGER REFERENCES locations(id) ON DELETE SET NULL,
+    assigned_to INTEGER[], -- Массив ID исполнителей
+    assigned_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    priority VARCHAR(50) DEFAULT 'medium',
+    due_date TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(50) DEFAULT 'pending',
+    progress INTEGER DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
+    images JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ==========================================
+-- 3. БАЗОВОЕ НАПОЛНЕНИЕ (SEED DATA)
+-- ==========================================
+
+-- Добавление ролей
+INSERT INTO roles (id, name) VALUES 
+(1, 'admin'), 
+(2, 'worker') 
+ON CONFLICT (id) DO NOTHING;
+SELECT setval('roles_id_seq', (SELECT MAX(id) FROM roles)); -- Обновляем счетчик ID
+
+-- Добавление отделов
+INSERT INTO departments (name) VALUES 
+('Администрация'), 
+('Клининг'), 
+('Техническое обслуживание') 
+ON CONFLICT DO NOTHING;
+
+-- Добавление локаций
+INSERT INTO locations (name, address) VALUES 
+('ТЦ "Кристалл"', 'ул. Мира, 15'),
+('Бизнес-центр "Сфера"', 'пр. Ленина, 102') 
+ON CONFLICT DO NOTHING;
+
+-- Добавление пользователей
+-- 1. Администратор (пароль: admin123)
+INSERT INTO users (username, password_hash, first_name, last_name, role_id, department_id, is_active)
+VALUES (
+    'admin', 
+    '$2a$10$69lFmE678Hh.zXqH7tO8fO7Gj.8f9f8f9f8f9f8f9f8f9f8f9f8f', 
+    'Администратор', 
+    'Системы', 
+    1, 
+    1, 
+    true
+) ON CONFLICT DO NOTHING;
+
+-- 2. Тестовый работник
+INSERT INTO users (username, password_hash, first_name, last_name, role_id, phone, department_id, is_active)
+VALUES (
+    'ivan_worker', 
+    'hash', -- здесь должен быть реальный хэш пароля при регистрации
+    'Иван', 
+    'Смирнов', 
+    2, 
+    '89001112233', 
+    2, 
+    true
+) ON CONFLICT DO NOTHING;
+
+-- Добавление тестовой задачи
+INSERT INTO tasks (title, description, location_id, assigned_to, assigned_by, priority, status, progress)
+VALUES (
+    'Первая уборка', 
+    'Провести генеральную уборку и проверить работу приложения', 
+    1, -- ID локации (ТЦ "Кристалл")
+    ARRAY[2]::INTEGER[], -- ID работника (ivan_worker)
+    1, -- ID админа
+    'high', 
+    'in_progress', 
+    45
+) ON CONFLICT DO NOTHING;
