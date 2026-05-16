@@ -1,18 +1,18 @@
+// backend/routes/departments.js
 const express = require('express')
-const pool = require('../config/db')
-const authMiddleware = require('../middleware/auth')
-
 const router = express.Router()
+const pool = require('../config/db')
 
-router.get('/list', authMiddleware, async (req, res) => {
+// Роут: GET /api/departments/list
+router.get('/list', async (req, res) => {
 	try {
-		const query =
-			'SELECT * FROM departments WHERE is_active = true ORDER BY name'
-		const result = await pool.query(query)
-		res.json(result.rows)
+		const result = await pool.query(
+			'SELECT id, name FROM departments ORDER BY id ASC',
+		)
+		res.json(result.rows) // Отправляем массив отделов
 	} catch (error) {
-		console.error('Get departments error:', error)
-		res.status(500).json({ error: 'Ошибка получения отделов' })
+		console.error('Ошибка при получении отделов:', error)
+		res.status(500).json({ error: 'Ошибка сервера' })
 	}
 })
 

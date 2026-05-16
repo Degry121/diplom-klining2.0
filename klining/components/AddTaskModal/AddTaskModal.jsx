@@ -8,7 +8,7 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 		title: '',
 		description: '',
 		locationId: '',
-		assignedTo: '',
+		assignedTo: [],
 		priority: 'medium',
 		dueDate: '',
 	})
@@ -31,27 +31,44 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 				headers: { Authorization: `Bearer ${token}` },
 			})
 			const data = await response.json()
-			setLocations(data)
+			if (Array.isArray(data)) setLocations(data)
 		} catch (error) {
-			console.error('Error loading locations:', error)
+			setLocations([])
 		}
 	}
 
 	const loadUsers = async () => {
 		try {
 			const token = localStorage.getItem('token')
-			const response = await fetch('http://localhost:5000/api/users/list', {
-				headers: { Authorization: `Bearer ${token}` },
-			})
+			const response = await fetch(
+				'http://localhost:5000/api/users/workers-only',
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				},
+			)
 			const data = await response.json()
-			setUsers(data.filter(u => u.role_name === 'worker'))
+			if (Array.isArray(data)) setUsers(data)
 		} catch (error) {
-			console.error('Error loading users:', error)
+			setUsers([])
 		}
+	}
+
+	const handleWorkerToggle = workerId => {
+		setFormData(prev => {
+			const isSelected = prev.assignedTo.includes(workerId)
+			const updated = isSelected
+				? prev.assignedTo.filter(id => id !== workerId)
+				: [...prev.assignedTo, workerId]
+			return { ...prev, assignedTo: updated }
+		})
 	}
 
 	const handleSubmit = async e => {
 		e.preventDefault()
+		if (formData.assignedTo.length === 0) {
+			setError('Выберите хотя бы одного сотрудника')
+			return
+		}
 		setError('')
 		setLoading(true)
 
@@ -67,10 +84,7 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 			})
 
 			const data = await response.json()
-
-			if (!response.ok) {
-				throw new Error(data.error || 'Ошибка создания задачи')
-			}
+			if (!response.ok) throw new Error(data.error || 'Ошибка создания')
 
 			onTaskAdded()
 			onClose()
@@ -78,7 +92,7 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 				title: '',
 				description: '',
 				locationId: '',
-				assignedTo: '',
+				assignedTo: [],
 				priority: 'medium',
 				dueDate: '',
 			})
@@ -98,9 +112,9 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 		>
 			<div className='modal-content' onClick={e => e.stopPropagation()}>
 				<div className='modal-header'>
-					<h2>Создать задачу</h2>
+					<h2>Новая задача</h2>
 					<button className='modal-close' onClick={onClose}>
-						×
+						&times;
 					</button>
 				</div>
 
@@ -108,9 +122,10 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 					{error && <div className='modal-error'>{error}</div>}
 
 					<div className='form-group'>
-						<label>Название задачи</label>
+						<label>Заголовок задачи</label>
 						<input
 							type='text'
+							placeholder='Например: Уборка конференц-зала'
 							value={formData.title}
 							onChange={e =>
 								setFormData({ ...formData, title: e.target.value })
@@ -120,52 +135,35 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 					</div>
 
 					<div className='form-group'>
-						<label>Описание</label>
+						<label>Инструкции и примечания</label>
 						<textarea
+							placeholder='Опишите детали задачи...'
 							value={formData.description}
 							onChange={e =>
 								setFormData({ ...formData, description: e.target.value })
 							}
-							rows='4'
+							rows='3'
 						/>
 					</div>
 
-					<div className='form-group'>
-						<label>Объект</label>
-						<select
-							value={formData.locationId}
-							onChange={e =>
-								setFormData({ ...formData, locationId: e.target.value })
-							}
-							required
-						>
-							<option value=''>Выберите объект</option>
-							{locations.map(loc => (
-								<option key={loc.id} value={loc.id}>
-									{loc.name}
-								</option>
-							))}
-						</select>
-					</div>
-
-					<div className='form-group'>
-						<label>Назначить на</label>
-						<select
-							value={formData.assignedTo}
-							onChange={e =>
-								setFormData({ ...formData, assignedTo: e.target.value })
-							}
-						>
-							<option value=''>Не назначено</option>
-							{users.map(user => (
-								<option key={user.id} value={user.id}>
-									{user.first_name} {user.last_name}
-								</option>
-							))}
-						</select>
-					</div>
-
 					<div className='form-row'>
+						<div className='form-group'>
+							<label>Объект</label>
+							<select
+								value={formData.locationId}
+								onChange={e =>
+									setFormData({ ...formData, locationId: e.target.value })
+								}
+								required
+							>
+								<option value=''>Выберите место</option>
+								{locations.map(loc => (
+									<option key={loc.id} value={loc.id}>
+										{loc.name}
+									</option>
+								))}
+							</select>
+						</div>
 						<div className='form-group'>
 							<label>Приоритет</label>
 							<select
@@ -179,17 +177,36 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 								<option value='high'>Высокий</option>
 							</select>
 						</div>
+					</div>
 
-						<div className='form-group'>
-							<label>Срок выполнения</label>
-							<input
-								type='datetime-local'
-								value={formData.dueDate}
-								onChange={e =>
-									setFormData({ ...formData, dueDate: e.target.value })
-								}
-							/>
+					<div className='form-group'>
+						<label>Исполнители ({formData.assignedTo.length})</label>
+						<div className='worker-selector'>
+							{users.map(user => (
+								<div
+									key={user.id}
+									className={`worker-chip ${formData.assignedTo.includes(user.id) ? 'active' : ''}`}
+									onClick={() => handleWorkerToggle(user.id)}
+								>
+									<span className='worker-chip__name'>
+										{user.first_name} {user.last_name}
+									</span>
+									<span className='worker-chip__user'>@{user.username}</span>
+								</div>
+							))}
 						</div>
+					</div>
+
+					<div className='form-group'>
+						<label>Крайний срок</label>
+						<input
+							type='datetime-local'
+							value={formData.dueDate}
+							onChange={e =>
+								setFormData({ ...formData, dueDate: e.target.value })
+							}
+							required
+						/>
 					</div>
 
 					<div className='modal-footer'>
@@ -197,7 +214,7 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 							Отмена
 						</button>
 						<button type='submit' className='btn-submit' disabled={loading}>
-							{loading ? 'Создание...' : 'Создать'}
+							{loading ? 'Создание...' : 'Создать задачу'}
 						</button>
 					</div>
 				</form>

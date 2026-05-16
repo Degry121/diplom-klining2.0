@@ -20,15 +20,15 @@ export default function Header() {
 	useEffect(() => {
 		const user = JSON.parse(localStorage.getItem('user') || '{}')
 		setUserName(
-			`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Пользователь'
+			`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Пользователь',
 		)
 	}, [])
 
 	const navItems = [
 		{ label: 'Главная', href: '/dashboard', icon: DashboardIcon },
 		{ label: 'Сотрудники', href: '/employees', icon: UsersIcon },
-		{ label: 'Объекты', href: '#objects', icon: LocationIcon },
-		{ label: 'Задачи', href: '#tasks', icon: TaskIcon },
+		{ label: 'Объекты', href: '/locations', icon: LocationIcon },
+		{ label: 'Задачи', href: '/tasks', icon: TaskIcon },
 	]
 
 	const handleLogout = () => {

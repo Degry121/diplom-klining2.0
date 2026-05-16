@@ -30,12 +30,19 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }) {
 				'http://localhost:5000/api/departments/list',
 				{
 					headers: { Authorization: `Bearer ${token}` },
-				}
+				},
 			)
 			const data = await response.json()
-			setDepartments(data)
+
+			// ЗАЩИТА: проверяем, что сервер вернул именно массив
+			if (Array.isArray(data)) {
+				setDepartments(data)
+			} else {
+				setDepartments([]) // Если пришла ошибка, ставим пустой массив
+			}
 		} catch (error) {
 			console.error('Error loading departments:', error)
+			setDepartments([])
 		}
 	}
 
@@ -46,7 +53,8 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }) {
 
 		try {
 			const token = localStorage.getItem('token')
-			const response = await fetch('http://localhost:5000/api/users/create', {
+			// ИСПРАВЛЕНО: отправляем запрос на правильный роут регистрации
+			const response = await fetch('http://localhost:5000/api/auth/register', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -166,11 +174,13 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }) {
 							}
 						>
 							<option value=''>Выберите отдел</option>
-							{departments.map(dept => (
-								<option key={dept.id} value={dept.id}>
-									{dept.name}
-								</option>
-							))}
+							{/* ЗАЩИТА: рендерим только если departments это массив */}
+							{Array.isArray(departments) &&
+								departments.map(dept => (
+									<option key={dept.id} value={dept.id}>
+										{dept.name}
+									</option>
+								))}
 						</select>
 					</div>
 

@@ -1,3 +1,4 @@
+/* ===== CSS ПЕРЕМЕННЫЕ ===== */
 :root {
   --bg: #f6f0f1;
   --bg-secondary: #ffffff;
@@ -9,8 +10,11 @@
   --border: #e0e0e0;
 }
 
-* { box-sizing: border-box; }
+* { 
+  box-sizing: border-box; 
+}
 
+/* ===== ГЛАВНЫЙ КОНТЕЙНЕР ===== */
 .dashboard-wrapper {
   min-height: 100vh;
   background: var(--bg);
@@ -25,22 +29,19 @@
   }
 }
 
-/* ===== КОНТЕНТ ===== */
+/* ===== КОНТЕНТ И СКРОЛЛБАР ===== */
 .dashboard-content {
   padding: 32px;
 
   &::-webkit-scrollbar {
     width: 8px;
   }
-
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-
   &::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
-
     &:hover {
       background: rgba(0, 0, 0, 0.3);
     }
@@ -65,7 +66,7 @@
   color: var(--text-secondary);
 }
 
-/* ===== ГРИД ===== */
+/* ===== ГЛАВНЫЙ ГРИД ===== */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 340px;
@@ -81,7 +82,7 @@
   gap: 24px;
 }
 
-/* ===== СТАТИСТИКА ===== */
+/* ===== СТАТИСТИКА (ВЕРХНИЕ КАРТОЧКИ) ===== */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -130,6 +131,47 @@
   font-size: 12px;
   color: var(--text-secondary);
   margin: 0;
+}
+
+/* ===== АНАЛИТИКА (ГРАФИКИ RECHARTS) ===== */
+.analytics-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.chart-container {
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  min-width: 0; /* КРИТИЧЕСКИ ВАЖНО ДЛЯ ГРАФИКОВ В CSS GRID */
+  transition: transform 0.2s ease;
+
+  h3 {
+    margin: 0 0 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Стилизация текста Recharts под светлую/темную тему */
+  :global(.recharts-text) {
+    fill: var(--text);
+  }
+  :global(.recharts-legend-item-text) {
+    color: var(--text) !important;
+  }
+  :global(.recharts-cartesian-grid-horizontal line),
+  :global(.recharts-cartesian-grid-vertical line),
+  :global(.recharts-polar-grid-angle line),
+  :global(.recharts-polar-grid-concentric polygon) {
+    stroke: var(--border);
+  }
 }
 
 /* ===== ПОСЛЕДНЯЯ АКТИВНОСТЬ ===== */
@@ -236,29 +278,28 @@
   flex-shrink: 0;
 
   &--green {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(46, 125, 50, 0.15);
+    color: #2e7d32;
   }
-
   &--blue {
-    background: #cfe2ff;
-    color: #084298;
+    background: rgba(25, 118, 210, 0.15);
+    color: #1976d2;
   }
-
   &--orange {
-    background: #ffe5cc;
-    color: #d97706;
+    background: rgba(245, 124, 0, 0.15);
+    color: #f57c00;
   }
 }
 
-/* ===== БЫСТРЫЕ ДЕЙСТВИЯ ===== */
+/* ===== БЫСТРЫЕ ДЕЙСТВИЯ (ПРАВАЯ ПАНЕЛЬ) ===== */
 .quick-actions {
   background: var(--bg-secondary);
   border-radius: var(--radius);
   padding: 24px;
   box-shadow: var(--shadow);
   height: fit-content;
-  margin-top: 110px;
+  position: sticky;
+  top: 32px;
 }
 
 .quick-actions__title {
@@ -289,6 +330,7 @@
   &:hover {
     background: rgba(11, 106, 106, 0.05);
     border-color: var(--primary);
+    transform: translateX(4px);
   }
 }
 
@@ -317,6 +359,19 @@
   }
 }
 
+/* ===== ЭКРАН ЗАГРУЗКИ ===== */
+.loader-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: var(--primary);
+  background: var(--bg);
+  font-weight: 600;
+}
+
+
 /* ===== АДАПТИВНЫЙ ДИЗАЙН ===== */
 @media (max-width: 1200px) {
   .dashboard-grid {
@@ -324,6 +379,7 @@
   }
 
   .quick-actions {
+    position: static;
     margin-top: 0;
   }
 
@@ -337,6 +393,10 @@
 @media (max-width: 1024px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .analytics-section {
+    grid-template-columns: 1fr;
   }
 }
 

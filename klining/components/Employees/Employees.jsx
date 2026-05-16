@@ -26,20 +26,25 @@ const Employees = () => {
 			})
 			const data = await response.json()
 
-			const employeesData = data.map(user => ({
-				id: user.id,
-				name: `${user.first_name} ${user.last_name}`,
-				login: user.username,
-				department: user.department_name || 'Не назначен',
-				tasks: parseInt(user.total_tasks) || 0,
-				efficiency: `${user.efficiency || 0}%`,
-				status: user.is_active ? 'Активен' : 'Неактивен',
-			}))
-
-			setEmployees(employeesData)
-			setLoading(false)
+			if (Array.isArray(data)) {
+				const employeesData = data.map(user => ({
+					id: user.id,
+					name:
+						`${user.first_name || ''} ${user.last_name || ''}`.trim() ||
+						user.username,
+					login: user.username,
+					department: user.department_name || 'Не назначен',
+					tasks: parseInt(user.total_tasks) || 0,
+					efficiency: `${user.efficiency || 0}%`,
+					status: user.is_active ? 'Активен' : 'Неактивен',
+				}))
+				setEmployees(employeesData)
+			} else {
+				setEmployees([])
+			}
 		} catch (error) {
-			console.error('Error loading employees:', error)
+			setEmployees([])
+		} finally {
 			setLoading(false)
 		}
 	}
@@ -58,14 +63,15 @@ const Employees = () => {
 				{
 					method: 'DELETE',
 					headers: { Authorization: `Bearer ${token}` },
-				}
+				},
 			)
 
 			if (response.ok) {
 				loadEmployees()
+				setShowConfirmModal(false)
 			}
 		} catch (error) {
-			console.error('Error deleting user:', error)
+			console.error(error)
 		}
 	}
 
@@ -81,14 +87,14 @@ const Employees = () => {
 						Authorization: `Bearer ${token}`,
 					},
 					body: JSON.stringify({ isActive: currentStatus !== 'Активен' }),
-				}
+				},
 			)
 
 			if (response.ok) {
 				loadEmployees()
 			}
 		} catch (error) {
-			console.error('Error toggling status:', error)
+			console.error(error)
 		}
 	}
 
@@ -135,69 +141,85 @@ const Employees = () => {
 							</tr>
 						</thead>
 						<tbody>
-							{employees.map(employee => (
-								<tr key={employee.id}>
-									<td className='employees__name'>{employee.name}</td>
-									<td className='employees__login'>{employee.login}</td>
-									<td className='employees__department'>
-										{employee.department}
-									</td>
-									<td className='employees__tasks'>{employee.tasks}</td>
-									<td className='employees__efficiency'>
-										{employee.efficiency}
-									</td>
-									<td>
-										<span
-											className={`employees__status ${
-												employee.status === 'Активен'
-													? 'employees__status--active'
-													: 'employees__status--inactive'
-											}`}
-										>
-											{employee.status}
-										</span>
-									</td>
-									<td>
-										<div
-											className={`employees__menu ${
-												openMenuId === employee.id ? 'active' : ''
-											}`}
-										>
-											<button
-												className='employees__menu-button'
-												onClick={() =>
-													setOpenMenuId(
-														openMenuId === employee.id ? null : employee.id
-													)
-												}
-											>
-												<span className='employees__menu-dot'></span>
-												<span className='employees__menu-dot'></span>
-												<span className='employees__menu-dot'></span>
-											</button>
-											<div className='employees__dropdown'>
-												<button
-													onClick={() => {
-														handleToggleStatus(employee.id, employee.status)
-														setOpenMenuId(null)
-													}}
-												>
-													{employee.status === 'Активен'
-														? 'Деактивировать'
-														: 'Активировать'}
-												</button>
-												<button
-													onClick={() =>
-														confirmDelete(employee.id, employee.name)
-													}
-												>
-													Удалить
-												</button>
-											</div>
-										</div>
+							{employees.length === 0 ? (
+								<tr>
+									<td
+										colSpan='7'
+										style={{
+											textAlign: 'center',
+											padding: '30px',
+											color: '#888',
+										}}
+									>
+										Список сотрудников пуст. Нажмите кнопку «+ Добавить
+										работника».
 									</td>
 								</tr>
-							))}
+							) : (
+								employees.map(employee => (
+									<tr key={employee.id}>
+										<td className='employees__name'>{employee.name}</td>
+										<td className='employees__login'>{employee.login}</td>
+										<td className='employees__department'>
+											{employee.department}
+										</td>
+										<td className='employees__tasks'>{employee.tasks}</td>
+										<td className='employees__efficiency'>
+											{employee.efficiency}
+										</td>
+										<td>
+											<span
+												className={`employees__status ${
+													employee.status === 'Активен'
+														? 'employees__status--active'
+														: 'employees__status--inactive'
+												}`}
+											>
+												{employee.status}
+											</span>
+										</td>
+										<td>
+											<div
+												className={`employees__menu ${
+													openMenuId === employee.id ? 'active' : ''
+												}`}
+											>
+												<button
+													className='employees__menu-button'
+													onClick={() =>
+														setOpenMenuId(
+															openMenuId === employee.id ? null : employee.id,
+														)
+													}
+												>
+													<span className='employees__menu-dot'></span>
+													<span className='employees__menu-dot'></span>
+													<span className='employees__menu-dot'></span>
+												</button>
+												<div className='employees__dropdown'>
+													<button
+														onClick={() => {
+															handleToggleStatus(employee.id, employee.status)
+															setOpenMenuId(null)
+														}}
+													>
+														{employee.status === 'Активен'
+															? 'Деактивировать'
+															: 'Активировать'}
+													</button>
+													<button
+														onClick={() =>
+															confirmDelete(employee.id, employee.name)
+														}
+													>
+														Удалить
+													</button>
+												</div>
+											</div>
+										</td>
+									</tr>
+								))
+							)}
 						</tbody>
 					</table>
 				</div>

@@ -3,9 +3,9 @@ const cors = require('cors')
 require('dotenv').config()
 
 const pool = require('./config/db')
+const path = require('path')
 
 const authRoutes = require('./routes/auth')
-// роутер админки (dashboard)
 const adminDashboardRoutes = require('./routes/dashboard')
 const usersRoutes = require('./routes/users')
 const tasksRoutes = require('./routes/tasks')
@@ -17,13 +17,10 @@ const PORT = process.env.PORT || 5000
 
 app.use(cors())
 app.use(express.json())
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 app.use('/api/auth', authRoutes)
-
-// всё, что относится к админ-панели, переведи под /api/admin
 app.use('/api/admin', adminDashboardRoutes)
-
-// остальные обычные роуты
 app.use('/api/users', usersRoutes)
 app.use('/api/tasks', tasksRoutes)
 app.use('/api/locations', locationsRoutes)
