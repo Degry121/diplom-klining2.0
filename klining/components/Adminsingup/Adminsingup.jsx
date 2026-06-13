@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiUrl } from '../../src/api'
+import { LegalAgreementModal } from '../LegalConsent/LegalConsent'
 import './Adminsingup.scss'
 
 export default function Adminsingup() {
@@ -7,6 +9,8 @@ export default function Adminsingup() {
 	const [password, setPassword] = useState('')
 	const [error, setError] = useState('')
 	const [loading, setLoading] = useState(false)
+	const [agreementAccepted, setAgreementAccepted] = useState(false)
+	const [isAgreementOpen, setIsAgreementOpen] = useState(false)
 	const navigate = useNavigate()
 
 	const handleLogin = async e => {
@@ -15,7 +19,10 @@ export default function Adminsingup() {
 		setLoading(true)
 
 		try {
-			const response = await fetch('http://localhost:5000/api/auth/login', {
+			localStorage.removeItem('token')
+			localStorage.removeItem('user')
+
+			const response = await fetch(apiUrl('/api/auth/login'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -29,11 +36,13 @@ export default function Adminsingup() {
 				throw new Error(data.error || 'Ошибка входа')
 			}
 
-			// Сохранение токена в localStorage
+			if (data.user.role_id !== 1) {
+				throw new Error('Доступ только для администраторов')
+			}
+
 			localStorage.setItem('token', data.token)
 			localStorage.setItem('user', JSON.stringify(data.user))
 
-			// Перенаправление на dashboard
 			navigate('/dashboard')
 		} catch (err) {
 			setError(err.message)
@@ -45,7 +54,7 @@ export default function Adminsingup() {
 	return (
 		<main className='admin-login'>
 			<div className='admin-login__container'>
-				<h1 className='admin-login__title'>Вход для админа</h1>
+				<h1 className='admin-login__title'>Вход для администратора</h1>
 				<p className='admin-login__subtitle'>Доступ к панели управления</p>
 
 				<div className='admin-login__card'>
@@ -84,16 +93,41 @@ export default function Adminsingup() {
 							/>
 						</div>
 
+						<label className='legal-checkbox'>
+							<input
+								type='checkbox'
+								checked={agreementAccepted}
+								onChange={e => setAgreementAccepted(e.target.checked)}
+								required
+							/>
+							<span>
+								Я согласен с обработкой персональных данных и принимаю{' '}
+								<button
+									type='button'
+									className='legal-link-button'
+									onClick={() => setIsAgreementOpen(true)}
+								>
+									пользовательское соглашение
+								</button>
+								.
+							</span>
+						</label>
+
 						<button
 							type='submit'
 							className='admin-login__button'
-							disabled={loading}
+							disabled={loading || !agreementAccepted}
 						>
 							{loading ? 'Вход...' : 'Войти'}
 						</button>
 					</form>
 				</div>
 			</div>
+
+			<LegalAgreementModal
+				isOpen={isAgreementOpen}
+				onClose={() => setIsAgreementOpen(false)}
+			/>
 		</main>
 	)
 }

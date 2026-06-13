@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiUrl } from '../../src/api'
+import { LegalAgreementModal } from '../LegalConsent/LegalConsent'
 import './Worker.scss'
 
 export default function Worker() {
@@ -7,6 +9,8 @@ export default function Worker() {
 	const [password, setPassword] = useState('')
 	const [error, setError] = useState('')
 	const [loading, setLoading] = useState(false)
+	const [agreementAccepted, setAgreementAccepted] = useState(false)
+	const [isAgreementOpen, setIsAgreementOpen] = useState(false)
 	const navigate = useNavigate()
 
 	const handleLogin = async e => {
@@ -15,8 +19,7 @@ export default function Worker() {
 		setLoading(true)
 
 		try {
-			// Отправляем запрос на сервер
-			const response = await fetch('http://localhost:5000/api/auth/login', {
+			const response = await fetch(apiUrl('/api/auth/login'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -33,16 +36,13 @@ export default function Worker() {
 				throw new Error(data.error || 'Ошибка входа')
 			}
 
-			// Проверяем, что это работник (role_id = 2)
 			if (data.user.role_id !== 2) {
 				throw new Error('Доступ только для работников')
 			}
 
-			// Сохраняем токен и данные пользователя
 			localStorage.setItem('token', data.token)
 			localStorage.setItem('user', JSON.stringify(data.user))
 
-			// Перенаправляем в Workspace
 			navigate('/workspace')
 		} catch (err) {
 			console.error('Login error:', err)
@@ -56,7 +56,7 @@ export default function Worker() {
 		<main className='worker-login'>
 			<div className='worker-login__container'>
 				<h1 className='worker-login__title'>Вход для работников</h1>
-				<p className='worker-login__subtitle'>Доступ к вашей рабочей панели</p>
+				<p className='worker-login__subtitle'>Доступ к рабочей панели</p>
 
 				<div className='worker-login__card'>
 					<form className='worker-login__form' onSubmit={handleLogin}>
@@ -94,16 +94,41 @@ export default function Worker() {
 							/>
 						</div>
 
+						<label className='legal-checkbox'>
+							<input
+								type='checkbox'
+								checked={agreementAccepted}
+								onChange={e => setAgreementAccepted(e.target.checked)}
+								required
+							/>
+							<span>
+								Я согласен с обработкой персональных данных и принимаю{' '}
+								<button
+									type='button'
+									className='legal-link-button'
+									onClick={() => setIsAgreementOpen(true)}
+								>
+									пользовательское соглашение
+								</button>
+								.
+							</span>
+						</label>
+
 						<button
 							type='submit'
 							className='worker-login__button'
-							disabled={loading}
+							disabled={loading || !agreementAccepted}
 						>
 							{loading ? 'Вход...' : 'Войти'}
 						</button>
 					</form>
 				</div>
 			</div>
+
+			<LegalAgreementModal
+				isOpen={isAgreementOpen}
+				onClose={() => setIsAgreementOpen(false)}
+			/>
 		</main>
 	)
 }

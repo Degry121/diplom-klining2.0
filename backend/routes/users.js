@@ -22,8 +22,8 @@ router.post('/create', authMiddleware, async (req, res) => {
 		const salt = await bcrypt.genSalt(10)
 		const passwordHash = await bcrypt.hash(password, salt)
 		const insertQuery = `
-            INSERT INTO users (username, password_hash, first_name, last_name, role_id, phone, department_id, created_by, is_active)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
+            INSERT INTO users (username, password_hash, first_name, last_name, role_id, phone, department_id, is_active)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, true)
             RETURNING id, username, first_name, last_name
         `
 		const result = await pool.query(insertQuery, [
@@ -34,7 +34,6 @@ router.post('/create', authMiddleware, async (req, res) => {
 			roleId,
 			phone || null,
 			departmentId || null,
-			req.user.id,
 		])
 		res.json({ message: 'Пользователь создан', user: result.rows[0] })
 	} catch (error) {

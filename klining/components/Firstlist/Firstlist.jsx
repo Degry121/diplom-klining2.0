@@ -22,10 +22,10 @@ export default function Firstlist() {
 						<div className='card__icon'>
 							<img className='card__iconImg' src={Users} alt='Пользователи' />
 						</div>
-						<h2 className='card__title'>Админ панель</h2>
+						<h2 className='card__title'>Админ-панель</h2>
 						<p className='card__text'>
-							Для управления работниками, назначение задач, отслеживания
-							эффективности и создания отчетов.
+							Управление сотрудниками, назначение задач, контроль эффективности
+							и формирование отчетов.
 						</p>
 						<Link to='/admin' className='card__btn'>
 							Войти
@@ -38,8 +38,8 @@ export default function Firstlist() {
 						</div>
 						<h2 className='card__title'>Для работников</h2>
 						<p className='card__text'>
-							Для управления работниками, назначение задач, отслеживания
-							эффективности и создания отчетов.
+							Просмотр назначенных задач, отправка фотоотчетов и отслеживание
+							истории выполненных работ.
 						</p>
 						<Link to='/worker' className='card__btn'>
 							Войти

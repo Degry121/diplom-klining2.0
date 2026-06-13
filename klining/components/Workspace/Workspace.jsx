@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import './Workspace.scss'
 import WorkspaceHeader from '../WorkspaceHeader/WorkspaceHeader'
 import { ThemeContext } from '../../src/context/ThemeContext'
+import { apiUrl, mediaUrl } from '../../src/api'
 import taskIcon from './img/task.svg'
 import progressIcon from './img/progress.svg'
 import completeIcon from './img/complete.svg'
@@ -61,7 +62,7 @@ const Workspace = () => {
 	const fetchTasks = async () => {
 		try {
 			const token = localStorage.getItem('token')
-			const response = await fetch('http://localhost:5000/api/tasks/my-tasks', {
+			const response = await fetch(apiUrl('/api/tasks/my-tasks'), {
 				headers: {
 					Authorization: `Bearer ${token}`,
 					'Content-Type': 'application/json',
@@ -85,7 +86,7 @@ const Workspace = () => {
 	const fetchStats = async () => {
 		try {
 			const token = localStorage.getItem('token')
-			const response = await fetch('http://localhost:5000/api/tasks/my-stats', {
+			const response = await fetch(apiUrl('/api/tasks/my-stats'), {
 				headers: {
 					Authorization: `Bearer ${token}`,
 					'Content-Type': 'application/json',
@@ -133,7 +134,7 @@ const Workspace = () => {
 		try {
 			const token = localStorage.getItem('token')
 			const response = await fetch(
-				`http://localhost:5000/api/tasks/${taskToComplete}/complete`,
+				apiUrl(`/api/tasks/${taskToComplete}/complete`),
 				{
 					method: 'PATCH',
 					headers: {
@@ -342,7 +343,7 @@ const Workspace = () => {
 												{task.images.map((img, idx) => (
 													<img
 														key={idx}
-														src={`http://localhost:5000${img}`}
+														src={mediaUrl(img)}
 														alt={`Отчет ${idx + 1}`}
 														style={{
 															width: '80px',
@@ -354,7 +355,7 @@ const Workspace = () => {
 														}}
 														onClick={() =>
 															window.open(
-																`http://localhost:5000${img}`,
+																mediaUrl(img),
 																'_blank',
 															)
 														}

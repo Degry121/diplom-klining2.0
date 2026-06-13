@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../Header/Header'
 import { ThemeContext } from '../../src/context/ThemeContext'
+import { apiUrl } from '../../src/api'
 import './Locations.scss'
 
 export default function Locations() {
@@ -17,7 +18,7 @@ export default function Locations() {
 	const loadLocations = async () => {
 		try {
 			const token = localStorage.getItem('token')
-			const response = await fetch('http://localhost:5000/api/locations/list', {
+			const response = await fetch(apiUrl('/api/locations/list'), {
 				headers: { Authorization: `Bearer ${token}` },
 			})
 			const data = await response.json()

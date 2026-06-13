@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { ThemeContext } from '../../src/context/ThemeContext'
+import { apiUrl } from '../../src/api'
 import './AddUserModal.scss'
 
 export default function AddUserModal({ isOpen, onClose, onUserAdded }) {
@@ -27,7 +28,7 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }) {
 		try {
 			const token = localStorage.getItem('token')
 			const response = await fetch(
-				'http://localhost:5000/api/departments/list',
+				apiUrl('/api/departments/list'),
 				{
 					headers: { Authorization: `Bearer ${token}` },
 				},
@@ -54,7 +55,7 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }) {
 		try {
 			const token = localStorage.getItem('token')
 			// ИСПРАВЛЕНО: отправляем запрос на правильный роут регистрации
-			const response = await fetch('http://localhost:5000/api/auth/register', {
+			const response = await fetch(apiUrl('/api/auth/register'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

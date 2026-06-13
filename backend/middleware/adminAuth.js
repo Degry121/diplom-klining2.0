@@ -10,7 +10,6 @@ const adminAuthMiddleware = (req, res, next) => {
 
 		const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-		// только админ
 		if (decoded.role_id !== 1) {
 			return res
 				.status(403)

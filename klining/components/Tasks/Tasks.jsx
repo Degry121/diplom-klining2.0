@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import Header from '../Header/Header'
 import { ThemeContext } from '../../src/context/ThemeContext'
+import { apiUrl, mediaUrl } from '../../src/api'
 import AddTaskModal from '../AddTaskModal/AddTaskModal'
 import './Tasks.scss'
 
@@ -34,7 +35,7 @@ export default function Tasks() {
 	const loadTasks = async () => {
 		try {
 			const token = localStorage.getItem('token')
-			const response = await fetch('http://localhost:5000/api/tasks/list', {
+			const response = await fetch(apiUrl('/api/tasks/list'), {
 				headers: { Authorization: `Bearer ${token}` },
 			})
 			const data = await response.json()
@@ -86,7 +87,7 @@ export default function Tasks() {
 		try {
 			const token = localStorage.getItem('token')
 			const response = await fetch(
-				`http://localhost:5000/api/tasks/${taskToComplete}/complete`,
+				apiUrl(`/api/tasks/${taskToComplete}/complete`),
 				{
 					method: 'PATCH',
 					headers: {
@@ -109,7 +110,7 @@ export default function Tasks() {
 		try {
 			const token = localStorage.getItem('token')
 			const response = await fetch(
-				`http://localhost:5000/api/tasks/${taskId}/status`,
+				apiUrl(`/api/tasks/${taskId}/status`),
 				{
 					method: 'PATCH',
 					headers: {
@@ -243,7 +244,7 @@ export default function Tasks() {
 														{task.images.map((img, idx) => (
 															<img
 																key={idx}
-																src={`http://localhost:5000${img}`}
+																src={mediaUrl(img)}
 																alt={`Отчет ${idx + 1}`}
 																style={{
 																	width: '80px',
@@ -256,7 +257,7 @@ export default function Tasks() {
 																}}
 																onClick={() =>
 																	window.open(
-																		`http://localhost:5000${img}`,
+																		mediaUrl(img),
 																		'_blank',
 																	)
 																}

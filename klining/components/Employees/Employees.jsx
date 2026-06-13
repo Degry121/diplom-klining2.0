@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import './Employees.scss'
 import Header from '../Header/Header'
 import { ThemeContext } from '../../src/context/ThemeContext'
+import { apiUrl } from '../../src/api'
 import AddUserModal from '../AddUserModal/AddUserModal'
 import ConfirmModal from '../ConfirmModal/ConfirmModal'
 
@@ -21,7 +22,7 @@ const Employees = () => {
 	const loadEmployees = async () => {
 		try {
 			const token = localStorage.getItem('token')
-			const response = await fetch('http://localhost:5000/api/users/list', {
+			const response = await fetch(apiUrl('/api/users/list'), {
 				headers: { Authorization: `Bearer ${token}` },
 			})
 			const data = await response.json()
@@ -59,7 +60,7 @@ const Employees = () => {
 		try {
 			const token = localStorage.getItem('token')
 			const response = await fetch(
-				`http://localhost:5000/api/users/${userToDelete.id}`,
+				apiUrl(`/api/users/${userToDelete.id}`),
 				{
 					method: 'DELETE',
 					headers: { Authorization: `Bearer ${token}` },
@@ -79,7 +80,7 @@ const Employees = () => {
 		try {
 			const token = localStorage.getItem('token')
 			const response = await fetch(
-				`http://localhost:5000/api/users/${userId}/toggle-status`,
+				apiUrl(`/api/users/${userId}/toggle-status`),
 				{
 					method: 'PATCH',
 					headers: {

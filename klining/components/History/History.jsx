@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react'
 import WorkspaceHeader from '../WorkspaceHeader/WorkspaceHeader'
 import { ThemeContext } from '../../src/context/ThemeContext'
+import { apiUrl, mediaUrl } from '../../src/api'
 import '../Workspace/Workspace.scss'
 import completeIcon from '../Workspace/img/complete.svg'
 import timeIcon from '../Workspace/img/time.svg'
@@ -33,7 +34,7 @@ export default function History() {
 	const fetchHistoryTasks = async () => {
 		try {
 			const token = localStorage.getItem('token')
-			const response = await fetch('http://localhost:5000/api/tasks/my-tasks', {
+			const response = await fetch(apiUrl('/api/tasks/my-tasks'), {
 				headers: {
 					Authorization: `Bearer ${token}`,
 					'Content-Type': 'application/json',
@@ -62,7 +63,7 @@ export default function History() {
 		try {
 			const token = localStorage.getItem('token')
 			const response = await fetch(
-				`http://localhost:5000/api/tasks/${taskId}/status`,
+				apiUrl(`/api/tasks/${taskId}/status`),
 				{
 					method: 'PATCH',
 					headers: {
@@ -210,7 +211,7 @@ export default function History() {
 												{task.images.map((img, idx) => (
 													<img
 														key={idx}
-														src={`http://localhost:5000${img}`}
+														src={mediaUrl(img)}
 														alt={`Отчет ${idx + 1}`}
 														style={{
 															width: '80px',
@@ -223,7 +224,7 @@ export default function History() {
 														}}
 														onClick={() =>
 															window.open(
-																`http://localhost:5000${img}`,
+																mediaUrl(img),
 																'_blank',
 															)
 														}

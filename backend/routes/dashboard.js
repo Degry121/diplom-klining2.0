@@ -9,80 +9,85 @@ const adminAuthMiddleware = (req, res, next) => {
 		const token = req.headers.authorization?.split(' ')[1]
 
 		if (!token) {
-			return res.status(401).json({ error: 'Токен не предоставлен' })
+			return res.status(401).json({ error: 'Token is required' })
 		}
 
 		const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
 		if (decoded.role_id !== 1) {
-			return res
-				.status(403)
-				.json({ error: 'Доступ только для администраторов' })
+			return res.status(403).json({ error: 'Admin access only' })
 		}
 
 		req.user = decoded
 		next()
 	} catch (error) {
-		return res.status(401).json({ error: 'Неверный токен' })
+		return res.status(401).json({ error: 'Invalid token' })
 	}
 }
 
 router.get('/stats', adminAuthMiddleware, async (req, res) => {
 	try {
-		const totalUsers = await pool.query('SELECT COUNT(*) as count FROM users')
-		const activeUsers = await pool.query(
-			'SELECT COUNT(*) as count FROM users WHERE role_id != 1',
-		)
-
-		let locationsCount = 0
-		let tasksCount = 0
-
-		try {
-			const locations = await pool.query(
-				'SELECT COUNT(*) as count FROM locations',
-			)
-			locationsCount = parseInt(locations.rows[0].count)
-		} catch (e) {}
-
-		try {
-			const tasks = await pool.query('SELECT COUNT(*) as count FROM tasks')
-			tasksCount = parseInt(tasks.rows[0].count)
-		} catch (e) {}
+		const stats = await pool.query(`
+            SELECT
+                (SELECT COUNT(*)::int FROM users) as "totalUsers",
+                (SELECT COUNT(*)::int FROM users WHERE role_id != 1 AND is_active = true) as "activeUsers",
+                (SELECT COUNT(*)::int FROM locations) as "locations",
+                (SELECT COUNT(*)::int FROM tasks) as "totalTasks"
+        `)
+		const statusDistribution = await pool.query(`
+            SELECT status as name, COUNT(*)::int as value
+            FROM tasks
+            GROUP BY status
+            ORDER BY status
+        `)
+		const locationLoad = await pool.query(`
+            SELECT l.name, COUNT(t.id)::int as value
+            FROM locations l
+            LEFT JOIN tasks t ON l.id = t.location_id
+            GROUP BY l.id, l.name
+            ORDER BY l.name
+            LIMIT 5
+        `)
 
 		res.json({
-			totalUsers: parseInt(totalUsers.rows[0].count),
-			activeUsers: parseInt(activeUsers.rows[0].count),
-			locations: locationsCount,
-			totalTasks: tasksCount,
+			...stats.rows[0],
+			charts: {
+				status: statusDistribution.rows,
+				locations: locationLoad.rows,
+			},
 		})
 	} catch (error) {
-		res.status(500).json({ error: 'Ошибка получения статистики' })
+		console.error('Dashboard stats error:', error)
+		res.status(500).json({ error: 'Stats query failed', details: error.message })
 	}
 })
 
 router.get('/activity', adminAuthMiddleware, async (req, res) => {
 	try {
-		const query = `
-            SELECT 
-                t.id, 
-                t.title, 
-                t.status, 
+		const result = await pool.query(`
+            SELECT
+                t.id,
+                t.title,
+                t.status,
                 t.created_at,
-                u.first_name, 
-                u.last_name,
+                workers.assigned_to_name,
                 l.name as location_name
             FROM tasks t
-            LEFT JOIN users u ON t.assigned_to = u.id
             LEFT JOIN locations l ON t.location_id = l.id
+            LEFT JOIN LATERAL (
+                SELECT string_agg(
+                    trim(concat_ws(' ', u.first_name, u.last_name)),
+                    ', '
+                ) as assigned_to_name
+                FROM users u
+                WHERE u.id = ANY(t.assigned_to)
+            ) workers ON true
             ORDER BY t.created_at DESC
             LIMIT 5
-        `
-		const result = await pool.query(query)
+        `)
 
 		const activities = result.rows.map(task => {
-			const workerName = task.first_name
-				? `${task.first_name} ${task.last_name}`
-				: 'Не назначено'
+			const workerName = task.assigned_to_name || 'Не назначено'
 			const locName = task.location_name || 'Без объекта'
 
 			return {
@@ -101,7 +106,8 @@ router.get('/activity', adminAuthMiddleware, async (req, res) => {
 
 		res.json(activities)
 	} catch (error) {
-		res.status(500).json({ error: 'Ошибка получения активности' })
+		console.error('Dashboard activity error:', error)
+		res.status(500).json({ error: 'Activity query failed', details: error.message })
 	}
 })
 

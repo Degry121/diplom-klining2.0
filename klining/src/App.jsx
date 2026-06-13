@@ -11,52 +11,56 @@ import Worker from '../components/Worker/Worker.jsx'
 import Workspace from '../components/Workspace/Workspace.jsx'
 import History from '../components/History/History.jsx'
 import ProtectedAdminRoute from '../components/ProtectedAdminRoute/ProtectedAdminRoute.jsx'
+import { CookieConsent } from '../components/LegalConsent/LegalConsent.jsx'
 
 export default function App() {
 	return (
-		<Routes>
-			<Route path='/' element={<Firstlist />} />
-			<Route path='/admin' element={<Adminsingup />} />
-			<Route path='/worker' element={<Worker />} />
+		<>
+			<Routes>
+				<Route path='/' element={<Firstlist />} />
+				<Route path='/admin' element={<Adminsingup />} />
+				<Route path='/worker' element={<Worker />} />
 
-			<Route
-				path='/dashboard'
-				element={
-					<ProtectedAdminRoute>
-						<Dashboard />
-					</ProtectedAdminRoute>
-				}
-			/>
+				<Route
+					path='/dashboard'
+					element={
+						<ProtectedAdminRoute>
+							<Dashboard />
+						</ProtectedAdminRoute>
+					}
+				/>
 
-			<Route
-				path='/employees'
-				element={
-					<ProtectedAdminRoute>
-						<Employees />
-					</ProtectedAdminRoute>
-				}
-			/>
+				<Route
+					path='/employees'
+					element={
+						<ProtectedAdminRoute>
+							<Employees />
+						</ProtectedAdminRoute>
+					}
+				/>
 
-			<Route
-				path='/locations'
-				element={
-					<ProtectedAdminRoute>
-						<Locations />
-					</ProtectedAdminRoute>
-				}
-			/>
+				<Route
+					path='/locations'
+					element={
+						<ProtectedAdminRoute>
+							<Locations />
+						</ProtectedAdminRoute>
+					}
+				/>
 
-			<Route
-				path='/tasks'
-				element={
-					<ProtectedAdminRoute>
-						<Tasks />
-					</ProtectedAdminRoute>
-				}
-			/>
+				<Route
+					path='/tasks'
+					element={
+						<ProtectedAdminRoute>
+							<Tasks />
+						</ProtectedAdminRoute>
+					}
+				/>
 
-			<Route path='/workspace' element={<Workspace />} />
-			<Route path='/workspace/history' element={<History />} />
-		</Routes>
+				<Route path='/workspace' element={<Workspace />} />
+				<Route path='/workspace/history' element={<History />} />
+			</Routes>
+			<CookieConsent />
+		</>
 	)
 }

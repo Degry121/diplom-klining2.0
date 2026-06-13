@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+﻿import React, { useContext, useEffect, useState } from 'react'
 import {
 	PieChart,
 	Pie,
@@ -12,6 +12,7 @@ import {
 	Legend,
 } from 'recharts'
 import { ThemeContext } from '../../src/context/ThemeContext'
+import { apiUrl } from '../../src/api'
 import './Dashboard.scss'
 import Header from '../../components/Header/Header'
 import AddUserModal from '../AddUserModal/AddUserModal'
@@ -47,7 +48,12 @@ export default function Dashboard() {
 			subtitle: 'Места уборки',
 			icon: LocationGreen,
 		},
-		{ title: 'Всего задач', value: 0, subtitle: 'В системе', icon: TaskGreen },
+		{
+			title: 'Всего задач',
+			value: 0,
+			subtitle: 'В системе',
+			icon: TaskGreen,
+		},
 	])
 	const [loading, setLoading] = useState(true)
 	const [showUserModal, setShowUserModal] = useState(false)
@@ -64,77 +70,70 @@ export default function Dashboard() {
 		return badges[status] || badges.pending
 	}
 
-	useEffect(() => {
-		// Имитируем задержку сети
-		setTimeout(() => {
-			loadMockData()
-		}, 500)
-	}, [])
-
-	const loadMockData = () => {
-		// Устанавливаем фиктивные данные статистики
-		setStats([
-			{
-				title: 'Всего пользователей',
-				value: 6,
-				subtitle: 'Все сотрудники',
-				icon: UsersGreen,
-			},
-			{
-				title: 'Активных пользователей',
-				value: 4,
-				subtitle: 'В строю',
-				icon: UserCheck,
-			},
-			{
-				title: 'Объекты',
-				value: 4,
-				subtitle: 'Места уборки',
-				icon: LocationGreen,
-			},
-			{
-				title: 'Всего задач',
-				value: 8,
-				subtitle: 'В системе',
-				icon: TaskGreen,
-			},
-		])
-
-		// Устанавливаем фиктивные данные для графиков
-		setChartData({
-			status: [
-				{ name: 'В работе', value: 3 },
-				{ name: 'Завершено', value: 5 },
-			],
-			locations: [
-				{ name: 'Офис 1', value: 4 },
-				{ name: 'Офис 2', value: 2 },
-				{ name: 'Склад', value: 2 },
-			],
-		})
-
-		// Устанавливаем фиктивную активность
-		setTasks([
-			{
-				id: 1,
-				name: 'Уборка',
-				action: 'Статус изменен',
-				time: '14:30',
-				status: 'in_progress',
-			},
-			{
-				id: 2,
-				name: 'Ремонт',
-				action: 'Задача завершена',
-				time: '12:00',
-				status: 'completed',
-			},
-		])
-
-		setLoading(false)
+	const normalizeStatusChart = data => {
+		return (Array.isArray(data) ? data : []).map(item => ({
+			...item,
+			name: getStatusBadge(item.name).text,
+			value: Number(item.value) || 0,
+		}))
 	}
 
-	if (loading) return <div className='loader-screen'>Загрузка аналитики...</div>
+	const normalizeChartValues = data => {
+		return (Array.isArray(data) ? data : []).map(item => ({
+			...item,
+			value: Number(item.value) || 0,
+		}))
+	}
+
+	const loadDashboardData = async () => {
+		setLoading(true)
+		try {
+			const token = localStorage.getItem('token')
+			const headers = { Authorization: `Bearer ${token}` }
+			const [statsResponse, activityResponse] = await Promise.all([
+				fetch(apiUrl('/api/admin/stats'), { headers }),
+				fetch(apiUrl('/api/admin/activity'), { headers }),
+			])
+
+			if (!statsResponse.ok || !activityResponse.ok) {
+				throw new Error('Dashboard data load failed')
+			}
+
+			const statsData = await statsResponse.json()
+			const activityData = await activityResponse.json()
+			const statValues = [
+				statsData.totalUsers,
+				statsData.activeUsers,
+				statsData.locations,
+				statsData.totalTasks,
+			]
+
+			setStats(current =>
+				current.map((stat, idx) => ({
+					...stat,
+					value: Number(statValues[idx]) || 0,
+				})),
+			)
+			setChartData({
+				status: normalizeStatusChart(statsData.charts?.status),
+				locations: normalizeChartValues(statsData.charts?.locations),
+			})
+			setTasks(Array.isArray(activityData) ? activityData : [])
+		} catch (error) {
+			console.error(error)
+			setChartData({ status: [], locations: [] })
+			setTasks([])
+		} finally {
+			setLoading(false)
+		}
+	}
+
+	useEffect(() => {
+		loadDashboardData()
+	}, [])
+
+	if (loading)
+		return <div className='loader-screen'>Загрузка аналитики...</div>
 
 	return (
 		<div className={`dashboard-wrapper ${isDarkMode ? 'dark-mode' : ''}`}>
@@ -274,13 +273,15 @@ export default function Dashboard() {
 			<AddUserModal
 				isOpen={showUserModal}
 				onClose={() => setShowUserModal(false)}
-				onUserAdded={loadMockData}
+				onUserAdded={loadDashboardData}
 			/>
 			<AddTaskModal
 				isOpen={showTaskModal}
 				onClose={() => setShowTaskModal(false)}
-				onTaskAdded={loadMockData}
+				onTaskAdded={loadDashboardData}
 			/>
 		</div>
 	)
 }
+
+

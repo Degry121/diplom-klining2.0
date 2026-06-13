@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { ThemeContext } from '../../src/context/ThemeContext'
+import { apiUrl } from '../../src/api'
 import './AddTaskModal.scss'
 
 export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
@@ -27,7 +28,7 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 	const loadLocations = async () => {
 		try {
 			const token = localStorage.getItem('token')
-			const response = await fetch('http://localhost:5000/api/locations/list', {
+			const response = await fetch(apiUrl('/api/locations/list'), {
 				headers: { Authorization: `Bearer ${token}` },
 			})
 			const data = await response.json()
@@ -41,7 +42,7 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 		try {
 			const token = localStorage.getItem('token')
 			const response = await fetch(
-				'http://localhost:5000/api/users/workers-only',
+				apiUrl('/api/users/workers-only'),
 				{
 					headers: { Authorization: `Bearer ${token}` },
 				},
@@ -74,7 +75,7 @@ export default function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
 
 		try {
 			const token = localStorage.getItem('token')
-			const response = await fetch('http://localhost:5000/api/tasks/create', {
+			const response = await fetch(apiUrl('/api/tasks/create'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
